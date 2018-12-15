@@ -6,8 +6,8 @@ python脚本，自动登陆苏州大学(苏大)wifi网关。
 ## 简述
 ### 第三方包
 ```python
+import pywifi  # 需要单独安装
 import json
-import pywifi
 import base64
 import time
 import requests
