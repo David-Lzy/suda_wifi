@@ -1,6 +1,8 @@
 #! python3
 # -*-coding:utf-8-*-
 import json
+import os
+import sys
 
 import pywifi
 import base64
@@ -45,31 +47,49 @@ def login(username, password, kind=1):
     :return:
     '''
     # data
-    data = 'username={}&domain=&password={}&enablemacauth={}'.format(username, base64.b64encode(password.encode('utf-8')).decode('utf8'), kind)
+    data = 'username={}&domain=&password={}&enablemacauth={}'.format(username,
+                                                                     base64.b64encode(password.encode('utf-8')).decode(
+                                                                         'utf8'), kind)
     if kind == 1:
         print('您采用的是包月登陆，当天连接WIFI，不需要再次登陆。')
     else:
         print('您采用的是计时登陆，当天连接WIFI，需要再次登陆。')
     # 头信息
     header = {
-        'Host': 'a.suda.edu.cn',
-        'Connection': 'keep-alive',
-        'Content-Length': '77',
+        # 'Host': 'a.suda.edu.cn',
+        # 'Connection': 'keep-alive',
+        # 'Content-Length': '77',
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Origin': 'http://a.suda.edu.cn',
         'X-Requested-With': 'XMLHttpRequest',
         'User-Agent': 'Mozilla/5.0 (Linux; U; Android 8.0.0; zh-CN; MI 6 Build/OPR1.170623.027) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.108 Quark/2.5.2.940 Mobile Safari/537.36',
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Referer': 'http://a.suda.edu.cn/index.php?url=aHR0cDovL3dnLnN1ZGEuZWR1LmNuLw==',
+        # 'Referer': 'http://a.suda.edu.cn/index.php?url=aHR0cDovL3dnLnN1ZGEuZWR1LmNuLw==',
         'Accept-Encoding': 'gzip, deflate',
         'Accept-Language': 'zh-CN,en-US;q=0.8',
     }
-    res = requests.post('http://a.suda.edu.cn/index.php/index/login',
-                        data=data, headers=header)
+    for i in range(10):
+        try:
+            res = requests.post('http://a.suda.edu.cn/index.php/index/login',
+                                data=data, headers=header)
+        except Exception as e:
+            if i == 9:
+                print("Cannot handle the problem!")
+                print("Sorry!")
+                sys.exit()
+            print("==========================================")
+            print("Connection refused by the server..")
+            print("Let me sleep for 5 seconds")
+            print("ZZzzzz...")
+            time.sleep(5)
+            print("Was a nice sleep, now let me continue...")
+            print("==========================================")
+            continue
     res = res.content.decode("unicode-escape")  # 编码解析
     res = json.loads(res)  # 将返回的字典字符，转为字典
     print('结果:', res['info'])
-
+    print('3s后自动关闭')
+    time.sleep(3)
 
 if __name__ == '__main__':
     print('正在搜索WIFI...')
@@ -79,4 +99,4 @@ if __name__ == '__main__':
     # 登陆：包月或者计时
     print('正在登陆...')
     # TODO: 输入学号密码，注意不要泄露
-    login('学号', '密码')
+    login('17000000', '000000')
