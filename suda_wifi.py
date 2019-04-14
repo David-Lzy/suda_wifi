@@ -16,19 +16,30 @@ def wifi_list():
     iface.scan()  # 扫描
     time.sleep(2)  # 延迟两秒
     wifi_l = iface.scan_results()  # 所有WiFi数据
-    wifi_l = [i.ssid for i in wifi_l]
-    return wifi_l
+    wifi = [(i.ssid, i.signal, i) for i in wifi_l]
+    # 根据信号强弱排序，并去除重复名称
+    wifi.sort(key=lambda x: x[1], reverse=True)
+    lTemp = {}
+    for i in wifi:
+        if i[0] not in lTemp.keys():
+            lTemp[i[0]] = i[1]
+    wifi = list(lTemp.items())
+    return wifi
 
 
 def cntwifi(l):  # 连接wifi：优先连接5G的
-    suda_wifi = ['SUDA_WIFI_5G', 'SUDA_WIFI']  # 苏大wifi
-    if suda_wifi[1] in l:  # 优先连接5G，否则报错
-        if suda_wifi[0] in l:
-            wifi_n = suda_wifi[0]
-        else:
-            wifi_n = suda_wifi[1]
+    suda_wifi = []
+    for i in l:
+        if "SUDA_WIFI_5G" == i[0]:
+            suda_wifi.append(i)
+        if "SUDA_WIFI" == i[0]:
+            suda_wifi.append(i)
+    suda_wifi.sort(reverse=True)
+    if suda_wifi:
+        print("正在连接的网络为：{}".format(suda_wifi[0][0]))
+        wifi_n = suda_wifi[0][0]
     else:
-        print('无苏大WiFi！')
+        raise RuntimeError('无苏大WiFi！')
 
     profile = pywifi.Profile()  # 创建wifi配置实例
     profile.ssid = wifi_n  # 配置名称
@@ -56,34 +67,28 @@ def login(username, password, kind=1):
         print('您采用的是计时登陆，当天连接WIFI，需要再次登陆。')
     # 头信息
     header = {
-        # 'Host': 'a.suda.edu.cn',
-        # 'Connection': 'keep-alive',
-        # 'Content-Length': '77',
+        'Host': 'a.suda.edu.cn',
+        'Connection': 'keep-alive',
+        'Content-Length': '77',
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Origin': 'http://a.suda.edu.cn',
         'X-Requested-With': 'XMLHttpRequest',
         'User-Agent': 'Mozilla/5.0 (Linux; U; Android 8.0.0; zh-CN; MI 6 Build/OPR1.170623.027) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.108 Quark/2.5.2.940 Mobile Safari/537.36',
         'Content-Type': 'application/x-www-form-urlencoded',
-        # 'Referer': 'http://a.suda.edu.cn/index.php?url=aHR0cDovL3dnLnN1ZGEuZWR1LmNuLw==',
+        'Referer': 'http://a.suda.edu.cn/index.php?url=aHR0cDovL3dnLnN1ZGEuZWR1LmNuLw==',
         'Accept-Encoding': 'gzip, deflate',
         'Accept-Language': 'zh-CN,en-US;q=0.8',
     }
-    for i in range(10):
+    while True:
         try:
             res = requests.post('http://a.suda.edu.cn/index.php/index/login',
                                 data=data, headers=header)
+            break
         except Exception as e:
-            if i == 9:
-                print("Cannot handle the problem!")
-                print("Sorry!")
-                sys.exit()
             print("==========================================")
             print("Connection refused by the server..")
-            print("Let me sleep for 5 seconds")
-            print("ZZzzzz...")
-            time.sleep(5)
+            print("Let me try again")
             print("Was a nice sleep, now let me continue...")
-            print("==========================================")
             continue
     res = res.content.decode("unicode-escape")  # 编码解析
     res = json.loads(res)  # 将返回的字典字符，转为字典
@@ -91,7 +96,9 @@ def login(username, password, kind=1):
     print('3s后自动关闭')
     time.sleep(3)
 
-if __name__ == '__main__':
+
+# input("回车结束")
+def main():
     print('正在搜索WIFI...')
     wifi_l = wifi_list()  # WiFi列表
     print('正在连接苏大WIFI...')
@@ -99,4 +106,8 @@ if __name__ == '__main__':
     # 登陆：包月或者计时
     print('正在登陆...')
     # TODO: 输入学号密码，注意不要泄露
-    login('17000000', '000000')
+    login('1709404010', 'Zlj1784470039')
+
+
+if __name__ == '__main__':
+    main()
