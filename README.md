@@ -14,3 +14,5 @@ import requests
 ```
 ### 使用
 在login中传入学号，密码。
+### 效果图
+![](http://ww1.sinaimg.cn/large/4adf6afcgy1g21xcfznxpj20br05hjrc.jpg)
